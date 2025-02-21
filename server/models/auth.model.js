@@ -1,3 +1,4 @@
+import { dbQuery } from "../configs/conn.js";
 import AppError from "../utils/customError.js";
 
 export const createUserQuery = async (client, data) => {
@@ -11,10 +12,41 @@ export const createUserQuery = async (client, data) => {
         return rows[0]
         
     } catch (error) {
-        if (error.code === "23505") {
-            throw new AppError("Email already exists", 400);
-        }
         console.log("Error creating user:", error);
         throw error 
     }
+}
+
+export const loginUserQuery = async (email) => {
+  try {
+    const queryText = `SELECT id, name, email, phoneNo, gender, state, city, address, status, lastlogin, password FROM users WHERE email = $1 LIMIT 1`;
+
+    const { rows } = await dbQuery(queryText, [email]);
+
+    if (rows.length === 0) {
+      throw new AppError("Invalid email or password", 401);
+    }
+
+    return rows[0];
+  } catch (error) {
+    console.log("Error login user:", error);
+    throw error;
+  }
+};
+
+export const getUserByIdQuery = async (id) => {
+    try {
+        const queryText = `SELECT id, name, email, phoneNo, gender, state, city, address, status, lastlogin FROM users WHERE id = $1 LIMIT 1`;
+    
+        const { rows } = await dbQuery(queryText, [id]);
+    
+        if (rows.length === 0) {
+          throw new AppError("User not found.", 404);
+        }
+    
+        return rows[0];
+      } catch (error) {
+        console.log("Error Authenticating user:", error);
+        throw error;
+      }
 }

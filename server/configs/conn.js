@@ -31,7 +31,7 @@ process.on("SIGINT", async () => {
     process.exit(0);
 });
 
-export const query = (statement, params) => {
+export const dbQuery = (statement, params) => {
     try {
         const result = pool.query(statement, params)
         return result

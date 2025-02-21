@@ -1,12 +1,16 @@
 import express from "express"
 import morgan from "morgan"
 import dotenv from "dotenv"
+import cookieParser from "cookie-parser"
+import passport from "passport"
 
 // local imports
 import AppError from "./utils/customError.js"
 import { globalErrorHandler } from "./controllers/errorController.js"
 import authRoute from "./routes/auth.route.js"
-import cookieParser from "cookie-parser"
+import { passportLoginAuthStrategy } from "./libs/passportjs/login.auth.config.js"
+import { isAunthenticated } from "./middlewares/auth.js"
+
 
 dotenv.config()
 const app = express()
@@ -15,10 +19,19 @@ app.use(morgan("dev"))
 app.use(express.json())
 app.use(cookieParser())
 
+passportLoginAuthStrategy()
+app.use(passport.initialize())
+
 app.use("/api/v1/auth", authRoute)
 
-app.get("/", (req, res) => {
-    res.send("Server running successfully")
+
+app.get("/", isAunthenticated, (req, res) => {
+    // res.send("Server running successfully")
+
+    const user = req.user
+    res.status(200).json({
+        user
+    })
 })
 
 app.all("*", (req, res, next) => {

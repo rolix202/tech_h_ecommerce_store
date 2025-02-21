@@ -1,3 +1,5 @@
+import AppError from "../utils/customError.js";
+
 const devError = (res, error) => {
     res.status(error.statusCode).json({
         status: error.status,
@@ -14,7 +16,7 @@ const prodError = (res, error) => {
     })
 }
 
-const duplicateValueError = (err) => {
+const duplicateEmailError = (err) => {
     return new AppError("Email already exists", 400);
 };
 
@@ -26,7 +28,7 @@ export const globalErrorHandler = (error, req, res, next) => {
         devError(res, error)
     } else if (process.env.NODE_ENV === "production") {
 
-        if (error.code === "23505") return duplicateValueError(error)
+        if (error.code === "23505") error = duplicateEmailError(error)
 
         prodError(res, error)
     }
