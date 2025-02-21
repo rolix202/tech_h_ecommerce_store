@@ -1,4 +1,5 @@
 import { signUpLogic } from "../services/auth.services.js"
+import { generateToken, setCookie } from "../utils/generateTokenAndSetCookie.js"
 
 export const signUp = async(req, res, next) => {
     try {

@@ -34,6 +34,12 @@ const createTables = async () => {
                 city VARCHAR(100) NOT NULL,
                 address VARCHAR(255) NOT NULL,
                 status VARCHAR(10) CHECK (status IN ('active', 'inactive')) DEFAULT 'active',
+                lastlogin TIMESTAMP DEFAULT NOW(),
+                isverified BOOLEAN DEFAULT false,
+                resetPasswordToken TEXT DEFAULT NULL,
+                resetPasswordExpiresAt TIMESTAMP DEFAULT NULL,
+                verificationToken TEXT DEFAULT NULL,
+                verificationTokenExpiresAt TIMESTAMP DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT NOW(),
                 updated_at TIMESTAMP DEFAULT NOW()
             );
@@ -41,7 +47,7 @@ const createTables = async () => {
 
         console.log("users table created successfully.");
 
-        // Create the trigger function separately
+        // update time function
         await client.query(`
             CREATE OR REPLACE FUNCTION update_timestamp()
             RETURNS TRIGGER AS $$
@@ -52,7 +58,7 @@ const createTables = async () => {
             $$ LANGUAGE plpgsql;
         `);
 
-        // Now create the trigger
+        // trigger to update the time
         await client.query(`
             CREATE TRIGGER trigger_update_timestamp
             BEFORE UPDATE ON users
@@ -64,7 +70,7 @@ const createTables = async () => {
     } catch (error) {
         console.error("Error setting up tables:", error);
     } finally {
-        if (client) client.release(); // Ensure client is released
+        if (client) client.release();
     }
 };
 

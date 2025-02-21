@@ -14,6 +14,10 @@ const prodError = (res, error) => {
     })
 }
 
+const duplicateValueError = (err) => {
+    return new AppError("Email already exists", 400);
+};
+
 export const globalErrorHandler = (error, req, res, next) => {
     error.statusCode = error.statusCode || 500
     error.status = error.status || 'error'
@@ -21,6 +25,9 @@ export const globalErrorHandler = (error, req, res, next) => {
     if (process.env.NODE_ENV === "development") {
         devError(res, error)
     } else if (process.env.NODE_ENV === "production") {
+
+        if (error.code === "23505") return duplicateValueError(error)
+
         prodError(res, error)
     }
 }
