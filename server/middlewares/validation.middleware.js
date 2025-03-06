@@ -54,3 +54,17 @@ export const signUpValidation = withErrorMessage([
             return true;
         })
 ]);
+
+export const loginValidation = withErrorMessage([
+    body("email")
+        .isEmail().withMessage("Not a valid email address.")
+        .trim()
+        .normalizeEmail(),
+
+    body("password")
+        .isLength({ min: 8 }).withMessage("Password must be at least 8 characters long.")
+]);
+
+export const emailTokenValidation = withErrorMessage([
+    body("token").notEmpty().withMessage("Token is required.").isNumeric().withMessage("Invalid or missing verification token.")
+])

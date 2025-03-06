@@ -1,5 +1,5 @@
 import passport from "passport"
-import { signUpLogic } from "../services/auth.services.js"
+import { signUpLogic, verifyEmailLogic } from "../services/auth.services.js"
 import { generateToken, setCookie } from "../utils/generateTokenAndSetCookie.js"
 import AppError from "../utils/customError.js"
 
@@ -36,3 +36,20 @@ export const login = async (req, res, next) => {
     });
   })(req, res, next);
 };
+
+export const verifyEmail = async (req, res, next) => {
+  try {
+    const result = await verifyEmailLogic(req.body)
+
+    res.status(200).json(result)
+    
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const userProfile = async (req, res, next) => {
+  const { user } = req
+
+  res.status(200).json(user)
+}

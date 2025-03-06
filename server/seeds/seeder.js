@@ -67,6 +67,34 @@ const createTables = async () => {
         `);
 
         console.log("Trigger for updating timestamps created successfully.");
+
+        console.log("Creating products table");
+
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS products (
+                id SERIAL PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                description TEXT,
+                price DECIMAL(10,2) NOT NULL,
+                stock INT CHECK (stock >= 0),
+                category VARCHAR(50),
+                brand VARCHAR(50),
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            )
+            `)
+
+            console.log("creating product images table");
+
+            await client.query(`
+                CREATE TABLE IF NOT EXISTS product_images (
+                    id SERIAL PRIMARY KEY,
+                    product_id INT REFERENCES products(id) ON DELETE CASCADE,
+                    image_url TEXT NOT NULL
+                )
+                `)
+            
+        
     } catch (error) {
         console.error("Error setting up tables:", error);
     } finally {

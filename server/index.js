@@ -8,8 +8,7 @@ import passport from "passport"
 import AppError from "./utils/customError.js"
 import { globalErrorHandler } from "./controllers/errorController.js"
 import authRoute from "./routes/auth.route.js"
-import { passportLoginAuthStrategy } from "./libs/passportjs/login.auth.config.js"
-import { isAunthenticated } from "./middlewares/auth.js"
+import { passportLoginAuthStrategy } from "./services/auth.services.js"
 
 
 dotenv.config()
@@ -23,15 +22,11 @@ passportLoginAuthStrategy()
 app.use(passport.initialize())
 
 app.use("/api/v1/auth", authRoute)
+app.use("/api/v1/products", productRoute)
 
 
-app.get("/", isAunthenticated, (req, res) => {
-    // res.send("Server running successfully")
-
-    const user = req.user
-    res.status(200).json({
-        user
-    })
+app.get("/", (req, res) => {
+    res.send("Server running successfully")
 })
 
 app.all("*", (req, res, next) => {
