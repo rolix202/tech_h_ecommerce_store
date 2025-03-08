@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { login, signUp, userProfile, verifyEmail } from "../controllers/auth.controller.js";
 import { emailTokenValidation, loginValidation, signUpValidation } from "../middlewares/validation.middleware.js";
-import { isAunthenticated } from "../middlewares/auth.js";
+import { isAunthenticated } from "../middlewares/auth.middleware.js";
 
 const router = Router()
 

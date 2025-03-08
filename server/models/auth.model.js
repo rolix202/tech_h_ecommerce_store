@@ -19,7 +19,7 @@ export const createUserQuery = async (data) => {
 
 export const loginUserQuery = async (email) => {
   try {
-    const queryText = `SELECT id, name, email, phoneNo, gender, state, city, address, status, lastlogin, password FROM users WHERE email = $1 LIMIT 1`;
+    const queryText = `SELECT id FROM users WHERE email = $1 LIMIT 1`;
 
     const { rows } = await dbQuery(queryText, [email]);
 
@@ -34,9 +34,18 @@ export const loginUserQuery = async (email) => {
   }
 };
 
+export const getUserPassword = async (email) => {
+
+  const queryText = `SELECT password FROM users WHERE email = $1`;
+
+  const { rows } = await dbQuery(queryText, [email]);
+
+  return rows[0];
+};
+
 export const getUserByIdQuery = async (id) => {
     try {
-        const queryText = `SELECT id, name, email, phoneNo, gender, state, city, address, status, lastlogin FROM users WHERE id = $1 LIMIT 1`;
+        const queryText = `SELECT id, name, email, phoneNo, gender, state, city, address, status, role, lastlogin FROM users WHERE id = $1 LIMIT 1`;
     
         const { rows } = await dbQuery(queryText, [id]);
     

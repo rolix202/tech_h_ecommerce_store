@@ -4,7 +4,7 @@ import { Strategy as LocalStrategy } from "passport-local";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 
 // local imports
-import { createUserQuery, getUserByIdQuery, loginUserQuery, updateUserVerification, verifyEmailTokenQuery } from "../models/auth.model.js"
+import { createUserQuery, getUserByIdQuery, getUserPassword, loginUserQuery, updateUserVerification, verifyEmailTokenQuery } from "../models/auth.model.js"
 import { sendVerificationToken, sendWelcomeMessage } from "../libs/mailtrap/emails.js"
 import AppError from "../utils/customError.js"
 
@@ -43,7 +43,9 @@ passport.use(new LocalStrategy({ usernameField: "email" }, async function verify
           return cb(null, false, { message: "Incorrect email or password." });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
+        const hashedPassword = await getUserPassword(email)
+
+        const isMatch = await bcrypt.compare(password, hashedPassword.password);
 
         if (!isMatch) {
           return cb(null, false, { message: "Incorrect email or password." });
@@ -70,6 +72,7 @@ const jwtOptions = {
 };
 
 passport.use(new JwtStrategy(jwtOptions, async function(payload, done) {
+    
     try {
         const user = await getUserByIdQuery(payload.userId)
 

@@ -20,7 +20,7 @@ export const signUp = async(req, res, next) => {
 
 export const login = async (req, res, next) => {
   passport.authenticate("local", { session: false }, (err, user, info) => {
-    if (err) return next(err);
+    if (err) return next(err);    
 
     if (!user) {
         throw new AppError(info.message || "Invalid Credentials", 400)
