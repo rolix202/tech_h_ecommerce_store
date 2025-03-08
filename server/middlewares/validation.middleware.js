@@ -68,3 +68,40 @@ export const loginValidation = withErrorMessage([
 export const emailTokenValidation = withErrorMessage([
     body("token").notEmpty().withMessage("Token is required.").isNumeric().withMessage("Invalid or missing verification token.")
 ])
+
+export const productValidation = withErrorMessage([
+    body("name")
+        .notEmpty().withMessage("Product name is required")
+        .trim()
+        .escape(),
+
+    body("description")
+        .notEmpty().withMessage("Product description is required")
+        .trim()
+        .escape(),
+
+    body("unit_price")
+        .notEmpty().withMessage("Unit price is required")
+        .isFloat({ min: 0 }).withMessage("Unit price must be a positive number"),
+
+    body("stock")
+        .notEmpty().withMessage("Stock quantity is required")
+        .isInt({ min: 0 }).withMessage("Stock must be a non-negative integer"),
+
+    body("category")
+        .notEmpty().withMessage("Category is required")
+        .trim()
+        .escape(),
+
+    body("brand")
+        .notEmpty().withMessage("Brand is required")
+        .trim()
+        .escape(),
+
+    body("images")
+        .optional()
+        .isArray({ min: 1 }).withMessage("Images should be an array with at least one image URL"),
+    
+    body("images.*")
+        .isURL().withMessage("Each image must be a valid URL")
+]);

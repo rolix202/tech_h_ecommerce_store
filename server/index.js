@@ -9,6 +9,7 @@ import AppError from "./utils/customError.js"
 import { globalErrorHandler } from "./controllers/errorController.js"
 import authRoute from "./routes/auth.route.js"
 import { passportLoginAuthStrategy } from "./services/auth.services.js"
+import productRoute from "./routes/product.route.js"
 
 
 dotenv.config()

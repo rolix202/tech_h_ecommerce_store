@@ -9,18 +9,17 @@ const pool = new Pool({
     user: process.env.USER,
     database: process.env.DATABASE,
     password: process.env.PASSWORD,
-    port: process.env.DB_PORT
+    port: Number(process.env.DB_PORT)
 });
 
 const createTables = async () => {
-
     let client;
 
     try {
         client = await pool.connect();
+        console.log("Connected to the database. Creating tables...");
 
-        console.log("Creating tables...");
-
+        // Users Table
         await client.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -44,10 +43,9 @@ const createTables = async () => {
                 updated_at TIMESTAMP DEFAULT NOW()
             );
         `);
+        console.log("✅ users table created successfully.");
 
-        console.log("users table created successfully.");
-
-        // update time function
+        // Function to auto-update timestamps
         await client.query(`
             CREATE OR REPLACE FUNCTION update_timestamp()
             RETURNS TRIGGER AS $$
@@ -57,52 +55,74 @@ const createTables = async () => {
             END;
             $$ LANGUAGE plpgsql;
         `);
+        console.log("✅ Timestamp update function created.");
 
-        // trigger to update the time
+        // Apply timestamp trigger to `users`
         await client.query(`
-            CREATE TRIGGER trigger_update_timestamp
+            CREATE TRIGGER trigger_update_users_timestamp
             BEFORE UPDATE ON users
             FOR EACH ROW
             EXECUTE FUNCTION update_timestamp();
         `);
+        console.log("✅ Trigger for users table created.");
 
-        console.log("Trigger for updating timestamps created successfully.");
-
-        console.log("Creating products table");
-
+        // Products Table
         await client.query(`
             CREATE TABLE IF NOT EXISTS products (
                 id SERIAL PRIMARY KEY,
                 name VARCHAR(100) NOT NULL,
                 description TEXT,
-                price DECIMAL(10,2) NOT NULL,
-                stock INT CHECK (stock >= 0),
+                unit_price DECIMAL(10,2) NOT NULL,
+                stock INT NOT NULL CHECK (stock >= 0),
                 category VARCHAR(50),
                 brand VARCHAR(50),
                 created_at TIMESTAMP DEFAULT NOW(),
                 updated_at TIMESTAMP DEFAULT NOW()
-            )
-            `)
+            );
+        `);
+        console.log("✅ products table created successfully.");
 
-            console.log("creating product images table");
+        // Apply timestamp trigger to `products`
+        await client.query(`
+            CREATE TRIGGER trigger_update_products_timestamp
+            BEFORE UPDATE ON products
+            FOR EACH ROW
+            EXECUTE FUNCTION update_timestamp();
+        `);
+        console.log("✅ Trigger for products table created.");
 
-            await client.query(`
-                CREATE TABLE IF NOT EXISTS product_images (
-                    id SERIAL PRIMARY KEY,
-                    product_id INT REFERENCES products(id) ON DELETE CASCADE,
-                    image_url TEXT NOT NULL
-                )
-                `)
-            
-        
+        // Product Images Table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS product_images (
+                id SERIAL PRIMARY KEY,
+                product_id INT REFERENCES products(id) ON DELETE CASCADE,
+                image_url TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT NOW(),
+                updated_at TIMESTAMP DEFAULT NOW()
+            );
+        `);
+        console.log("✅ product_images table created successfully.");
+
+        // Apply timestamp trigger to `product_images`
+        await client.query(`
+            CREATE TRIGGER trigger_update_product_images_timestamp
+            BEFORE UPDATE ON product_images
+            FOR EACH ROW
+            EXECUTE FUNCTION update_timestamp();
+        `);
+        console.log("✅ Trigger for product_images table created.");
+
     } catch (error) {
-        console.error("Error setting up tables:", error);
+        console.error("❌ Error setting up tables:", error);
     } finally {
         if (client) client.release();
+        await pool.end(); // Close the connection pool
+        console.log("✅ Database setup complete. Connection closed.");
     }
 };
 
+
 (async () => {
     await createTables();
-    pool.end();
 })();
+
