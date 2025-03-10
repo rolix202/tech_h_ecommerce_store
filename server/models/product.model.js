@@ -1,3 +1,5 @@
+import { dbQuery } from "../configs/conn.js"
+import AppError from "../utils/customError.js"
 
 
 export const insertProductDetails = async (client, data) => {
@@ -21,3 +23,81 @@ export const insertProductImages = async (client, productId, productImages) => {
 
     return rows[0]
 }
+
+export const fetchAllProductsQuery = async (filters) => {
+    const {
+        category, brand, minPrice, maxPrice, search,
+        sortBy = "created_at", order = "DESC",
+        page = 1, limit = 10
+    } = filters;
+
+    const offset = (page - 1) * limit;
+    let queryParams = [];
+    let conditions = []; 
+    let queryText = `
+        SELECT 
+            p.id, p.name, p.description, p.unit_price, p.stock, 
+            p.category, p.brand, p.created_at,
+            COALESCE(json_agg(img.image_url) FILTER (WHERE img.image_url IS NOT NULL), '[]') AS images
+        FROM products p
+        LEFT JOIN product_images img ON p.id = img.product_id
+    `;
+
+    if (category) {
+        queryParams.push(category);
+        conditions.push(`p.category = $${queryParams.length}`);
+    }
+
+    if (brand) {
+        queryParams.push(brand);
+        conditions.push(`p.brand = $${queryParams.length}`);
+    }
+
+    if (minPrice) {
+        queryParams.push(minPrice);
+        conditions.push(`p.unit_price >= $${queryParams.length}`);
+    }
+
+    if (maxPrice) {
+        queryParams.push(maxPrice);
+        conditions.push(`p.unit_price <= $${queryParams.length}`);
+    }
+
+    if (search) {
+        queryParams.push(`%${search}%`);
+        conditions.push(`p.name ILIKE $${queryParams.length}`);
+    }
+
+    if (conditions.length > 0) {
+        queryText += ` WHERE ${conditions.join(" AND ")}`;
+    }
+
+    queryText += `
+        GROUP BY p.id
+        ORDER BY ${sortBy} ${order}
+        LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}
+    `;
+
+    queryParams.push(limit, offset);
+
+    try {
+        const { rows } = await dbQuery(queryText, queryParams);
+
+        const countQuery = `SELECT COUNT(*) FROM products`;
+        const countResult = await dbQuery(countQuery);
+        const totalCount = parseInt(countResult.rows[0].count, 10);
+        const totalPages = Math.ceil(totalCount / limit);
+
+        return {
+            products: rows,
+            totalPages,
+            currentPage: page
+        };
+
+    } catch (error) {
+        console.error("Error in fetching products at model:", error);
+        throw error;
+    }
+};
+
+

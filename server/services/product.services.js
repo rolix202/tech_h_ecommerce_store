@@ -1,5 +1,5 @@
 import { pool } from "../configs/conn.js"
-import { insertProductDetails, insertProductImages } from "../models/product.model.js"
+import { fetchAllProductsQuery, insertProductDetails, insertProductImages } from "../models/product.model.js"
 
 export const createProductLogic = async (data) => {
 
@@ -7,7 +7,6 @@ export const createProductLogic = async (data) => {
 
     const { images, ...productDetails } = data
 
-    
     try {
         
         await client.query("BEGIN")
@@ -31,4 +30,14 @@ export const createProductLogic = async (data) => {
         client.release()
     }
     
+}
+
+export const fetchProductsLogic = async (filters) => {
+    try {
+        return await fetchAllProductsQuery(filters)
+
+    } catch (error) {
+        console.error("Error fetching products at product.services:", error);
+        throw error
+    }
 }

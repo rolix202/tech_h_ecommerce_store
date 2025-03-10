@@ -1,4 +1,4 @@
-import { body, validationResult } from "express-validator";
+import { body, query, validationResult } from "express-validator";
 import AppError from "../utils/customError.js";
 
 const withErrorMessage = (validations) => {
@@ -104,4 +104,59 @@ export const productValidation = withErrorMessage([
     
     body("images.*")
         .isURL().withMessage("Each image must be a valid URL")
+]);
+
+export const validateProductFilters = withErrorMessage([
+    query("category")
+        .optional()
+        .trim()
+        .isString()
+        .withMessage("Category must be a valid string"),
+
+    query("brand")
+        .optional()
+        .trim()
+        .isString()
+        .withMessage("Brand must be a valid string"),
+
+    query("minPrice")
+        .optional()
+        .isFloat({ min: 0 })
+        .withMessage("Minimum price must be a positive number"),
+
+    query("maxPrice")
+        .optional()
+        .isFloat({ min: 0 })
+        .withMessage("Maximum price must be a positive number"),
+
+    query("search")
+        .optional()
+        .trim()
+        .isString()
+        .withMessage("Search query must be a string")
+        .escape(),
+
+    query("sortBy")
+        .optional()
+        .isIn(["name", "price", "created_at", "stock"])
+        .withMessage("Invalid sortBy field."),
+
+    query("order")
+        .optional()
+        .toUpperCase()
+        .isIn(["ASC", "DESC"])
+        .withMessage("Invalid order field. Allowed: ASC or DESC"),
+
+    query("page")
+        .optional()
+        .isInt({ min: 1 })
+        .withMessage("Page must be a positive integer")
+        .toInt(),
+
+    query("limit")
+        .optional()
+        .isInt({ min: 1, max: 100 })
+        .withMessage("Limit must be between 1 and 100")
+        .toInt(),
+
 ]);
