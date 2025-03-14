@@ -34,6 +34,18 @@ export const loginUserQuery = async (email) => {
   }
 };
 
+export const updateLastLogin = async (id) => {
+  try {
+    const queryText = `UPDATE users SET lastlogin = NOW() WHERE id = $1`
+
+    await dbQuery(queryText, [id])
+  } catch (error) {
+    console.log("Error updating last login:", error);
+    throw error;
+  }
+  
+}
+
 export const getUserPassword = async (email) => {
 
   const queryText = `SELECT password FROM users WHERE email = $1`;

@@ -138,7 +138,7 @@ export const validateProductFilters = withErrorMessage([
 
     query("sortBy")
         .optional()
-        .isIn(["name", "price", "created_at", "stock"])
+        .isIn(["name", "unit_price", "created_at", "stock"])
         .withMessage("Invalid sortBy field."),
 
     query("order")
@@ -159,4 +159,13 @@ export const validateProductFilters = withErrorMessage([
         .withMessage("Limit must be between 1 and 100")
         .toInt(),
 
+]);
+
+export const productUpdateValidation = withErrorMessage([
+    body("name").optional().trim().notEmpty().withMessage("Name cannot be empty"),
+    body("description").optional().trim().notEmpty().withMessage("Description cannot be empty"),
+    body("unit_price").optional().isFloat({ min: 0 }).withMessage("Price must be a positive number"),
+    body("stock").optional().isInt({ min: 0 }).withMessage("Stock must be a non-negative integer"),
+    body("category").optional().trim().notEmpty().withMessage("Category cannot be empty"),
+    body("brand").optional().trim().notEmpty().withMessage("Brand cannot be empty"),
 ]);

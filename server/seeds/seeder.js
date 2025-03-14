@@ -19,7 +19,6 @@ const createTables = async () => {
         client = await pool.connect();
         console.log("Connected to the database. Creating tables...");
 
-        // Users Table
         await client.query(`
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -45,7 +44,6 @@ const createTables = async () => {
         `);
         console.log("✅ users table created successfully.");
 
-        // Function to auto-update timestamps
         await client.query(`
             CREATE OR REPLACE FUNCTION update_timestamp()
             RETURNS TRIGGER AS $$
@@ -57,7 +55,6 @@ const createTables = async () => {
         `);
         console.log("✅ Timestamp update function created.");
 
-        // Apply timestamp trigger to `users`
         await client.query(`
             CREATE TRIGGER trigger_update_users_timestamp
             BEFORE UPDATE ON users
@@ -66,7 +63,6 @@ const createTables = async () => {
         `);
         console.log("✅ Trigger for users table created.");
 
-        // Products Table
         await client.query(`
             CREATE TABLE IF NOT EXISTS products (
                 id SERIAL PRIMARY KEY,
@@ -82,7 +78,6 @@ const createTables = async () => {
         `);
         console.log("✅ products table created successfully.");
 
-        // Apply timestamp trigger to `products`
         await client.query(`
             CREATE TRIGGER trigger_update_products_timestamp
             BEFORE UPDATE ON products
@@ -91,7 +86,6 @@ const createTables = async () => {
         `);
         console.log("✅ Trigger for products table created.");
 
-        // Product Images Table
         await client.query(`
             CREATE TABLE IF NOT EXISTS product_images (
                 id SERIAL PRIMARY KEY,
@@ -103,7 +97,6 @@ const createTables = async () => {
         `);
         console.log("✅ product_images table created successfully.");
 
-        // Apply timestamp trigger to `product_images`
         await client.query(`
             CREATE TRIGGER trigger_update_product_images_timestamp
             BEFORE UPDATE ON product_images
@@ -116,7 +109,7 @@ const createTables = async () => {
         console.error("❌ Error setting up tables:", error);
     } finally {
         if (client) client.release();
-        await pool.end(); // Close the connection pool
+        await pool.end(); 
         console.log("✅ Database setup complete. Connection closed.");
     }
 };

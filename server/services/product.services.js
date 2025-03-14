@@ -1,5 +1,6 @@
 import { pool } from "../configs/conn.js"
-import { fetchAllProductsQuery, insertProductDetails, insertProductImages } from "../models/product.model.js"
+import { checkProductExistsQuery, fetchAllProductsQuery, insertProductDetails, insertProductImages, updateProductInforQuery } from "../models/product.model.js"
+import AppError from "../utils/customError.js"
 
 export const createProductLogic = async (data) => {
 
@@ -40,4 +41,24 @@ export const fetchProductsLogic = async (filters) => {
         console.error("Error fetching products at product.services:", error);
         throw error
     }
+}
+
+export const updateProductInfoLogic = async (id, updateFields) => {
+        
+    if (!id) throw new AppError("Prouct ID is required", 400);
+
+    const productExists = await checkProductExistsQuery(id)
+
+    if (!productExists) throw new AppError("Product not found", 404);  
+
+    const allowedFields = ["name", "description", "unit_price", "stock", "category", "brand"];
+
+    
+    const fieldsToUpdate = Object.fromEntries(
+        Object.entries(updateFields).filter(([key, value]) => allowedFields.includes(key) && value !== undefined)
+    );    
+    
+    if (Object.keys(fieldsToUpdate).length === 0) throw new AppError("No valid fields to update", 400);
+
+    return await updateProductInforQuery(id, fieldsToUpdate);
 }

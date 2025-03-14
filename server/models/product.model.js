@@ -100,4 +100,35 @@ export const fetchAllProductsQuery = async (filters) => {
     }
 };
 
+export const checkProductExistsQuery = async (id) => {
+    const queryText = `SELECT id FROM products WHERE id = $1 LIMIT 1`;
+    const { rows } = await dbQuery(queryText, [id]);
+    return rows.length > 0;
+};
+
+
+export const updateProductInforQuery = async (id, fieldsToUpdate) => {
+
+    const keys = Object.keys(fieldsToUpdate)
+    
+    const queryClause = keys.map((key, index) => `${key} = $${index + 1}`).join(", ")
+ 
+
+    const queryValues = keys.map((value) => fieldsToUpdate[value])
+
+    queryValues.push(Number(id))
+
+    const queryText = `UPDATE products SET ${queryClause}, updated_at = NOW() WHERE id = $${keys.length + 1} RETURNING *`
+
+    try {
+        const { rows } = await dbQuery(queryText, queryValues)
+
+        return rows[0]
+    } catch (error) {
+        console.error("Error updating product info at product.model:", error);
+        throw error;
+    }
+     
+}
+
 

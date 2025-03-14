@@ -1,4 +1,4 @@
-import { createProductLogic, fetchProductsLogic } from "../services/product.services.js"
+import { createProductLogic, fetchProductsLogic, updateProductInfoLogic } from "../services/product.services.js"
 import AppError from "../utils/customError.js";
 
 export const createProduct = async (req, res, next) => {
@@ -54,3 +54,32 @@ export const getAllProducts = async (req, res, next) => {
     }
     
 }
+
+export const updateProductInfoOnly = async (req, res, next) => {
+
+    const { id } = req.params
+    const updateFields = req.body
+    
+    try {
+        const result = await updateProductInfoLogic(id, updateFields)
+
+        return res.status(200).json({
+            status: "success",
+            message: "Product updated successfully",
+            data: result
+        });
+
+    } catch (error) {
+        console.error("Error updating product:", error);
+        next(error)
+    }
+}
+
+export const updateProductImagesOnly = async (req, res, next) => {
+
+}
+
+export const updateProductInfoAndImages = async (req, res, next) => {
+
+}
+
