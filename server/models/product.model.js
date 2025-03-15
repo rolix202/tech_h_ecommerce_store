@@ -33,7 +33,7 @@ export const fetchAllProductsQuery = async (filters) => {
 
     const offset = (page - 1) * limit;
     let queryParams = [];
-    let conditions = []; 
+    let conditions = [];
     let queryText = `
         SELECT 
             p.id, p.name, p.description, p.unit_price, p.stock, 
@@ -106,13 +106,12 @@ export const checkProductExistsQuery = async (id) => {
     return rows.length > 0;
 };
 
-
-export const updateProductInforQuery = async (id, fieldsToUpdate) => {
+export const updateProductInforQuery = async (client, id, fieldsToUpdate) => {
 
     const keys = Object.keys(fieldsToUpdate)
-    
+
     const queryClause = keys.map((key, index) => `${key} = $${index + 1}`).join(", ")
- 
+
 
     const queryValues = keys.map((value) => fieldsToUpdate[value])
 
@@ -121,14 +120,43 @@ export const updateProductInforQuery = async (id, fieldsToUpdate) => {
     const queryText = `UPDATE products SET ${queryClause}, updated_at = NOW() WHERE id = $${keys.length + 1} RETURNING *`
 
     try {
-        const { rows } = await dbQuery(queryText, queryValues)
+        let response;
 
-        return rows[0]
+        if (client){
+            response = await client.query(queryText, queryValues)
+        } else {
+            console.log("Sleeeeep mode! Mr man, go and sleep jareeeeee. catch you by 6:00 am");
+            
+            response = await dbQuery(queryText, queryValues)
+        }
+
+        return response.rows[0]
     } catch (error) {
         console.error("Error updating product info at product.model:", error);
         throw error;
     }
-     
+
 }
+
+export const deletePreviousImages = async (client, id) => {
+    const queryText = `DELETE FROM product_images WHERE product_id = $1`
+
+    await client.query(queryText, [id])
+}
+
+export const updateProductImagesQuery = async (client, id, images) => {
+    const queryText = `
+        INSERT INTO product_images(product_id, image_url)
+        SELECT $1, unnest($2:: text[])
+        ON CONFLICT(product_id, image_url) DO NOTHING
+        RETURNING image_url`;
+
+    const queryValues = [id, images];
+
+    const { rows } = await client.query(queryText, queryValues);
+    return rows.map((row) => row.image_url);
+};
+
+
 
 

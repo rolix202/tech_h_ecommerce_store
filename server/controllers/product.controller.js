@@ -1,4 +1,4 @@
-import { createProductLogic, fetchProductsLogic, updateProductInfoLogic } from "../services/product.services.js"
+import { createProductLogic, fetchProductsLogic, updateProductImagesLogic, updateProductInfoAndImagesLogic, updateProductInfoLogic } from "../services/product.services.js"
 import AppError from "../utils/customError.js";
 
 export const createProduct = async (req, res, next) => {
@@ -77,9 +77,42 @@ export const updateProductInfoOnly = async (req, res, next) => {
 
 export const updateProductImagesOnly = async (req, res, next) => {
 
+    const { id } = req.params
+    const { images } = req.body
+
+    try {
+
+        const result = await updateProductImagesLogic(id, images)
+
+        return res.status(200).json({
+            status: "success",
+            message: "Product updated successfully",
+            data: result
+        });
+        
+    } catch (error) {
+        console.error("Error updating product images:", error);
+        next(error)
+    }
 }
 
 export const updateProductInfoAndImages = async (req, res, next) => {
+    const { id } = req.params
+    const { images, ...updateFields } = req.body
 
+    try {
+
+        const result = await updateProductInfoAndImagesLogic(id, updateFields, images)
+
+        return res.status(200).json({
+            status: "success",
+            message: "Product updated successfully",
+            data: result
+        });
+        
+    } catch (error) {
+        console.error("Error updating product images:", error);
+        next(error)
+    }
 }
 

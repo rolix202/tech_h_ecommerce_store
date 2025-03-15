@@ -93,6 +93,7 @@ const createTables = async () => {
                 image_url TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT NOW(),
                 updated_at TIMESTAMP DEFAULT NOW()
+                CONSTRAINT unique_product_image UNIQUE (product_id, image_url)
             );
         `);
         console.log("✅ product_images table created successfully.");
